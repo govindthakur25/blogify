@@ -47,6 +47,19 @@ userSchema.pre("save", function (next) {
   next();
 });
 
+userSchema.static("matchPassword", async function (email, password) {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("Email is not registered!");
+  const { salt, password: storedPassword } = user;
+  const hashIncomingPassword = createHmac("sha256", salt)
+    .update(password)
+    .digest("hex");
+  if (hashIncomingPassword !== storedPassword)
+    throw new Error("Incorrect username or password!");
+
+  return { user };
+});
+
 const User = model("user", userSchema);
 
 export { User };

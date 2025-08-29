@@ -16,19 +16,8 @@ userRoute.post("/signup", async (req, res) => {
 
 userRoute.post("/signin", async (req, res) => {
   const { email, password } = req.body;
-  const user = await User.findOne({
-    email,
-  });
-  if (!user) {
-    res.redirect("/user/signup", { error: "Email is not registered!" });
-  }
-  const { salt } = user;
-  const hashIncomingPassword = createHmac("sha256", salt)
-    .update(password)
-    .digest("hex");
-  if (hashIncomingPassword !== user.password) {
-    res.redirect("/user/signin", { error: "Incorrect username or password!" });
-  }
+  const user = await User.matchPassword(email, password);
+  console.log({ user });
   // assign JWT token
   res.redirect("/");
 });
